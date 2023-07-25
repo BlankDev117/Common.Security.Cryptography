@@ -22,7 +22,7 @@ jobs:
         dotnet-version: ${{ matrix.dotnet-version }}
     - name: Restore dependencies
       run: >-
-        dotnet nuget add source --username USERNAME --password ${{ secrets.PACKAGE_READ_ACCESS }} --store-password-in-clear-text --name github https://nuget.pkg.github.com/BlankStudiosSoftware/index.json
+        dotnet nuget add source --api-key  ${{ secrets.NUGET_TOKEN }} --store-password-in-clear-text https://api.nuget.org/v3/index.json
         && dotnet restore ./src/${{ github.event.repository.name }}.sln
     - name: Build
       run: dotnet build --no-restore ./src/${{ github.event.repository.name }}.sln
