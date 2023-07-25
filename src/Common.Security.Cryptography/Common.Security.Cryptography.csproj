@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<RepositoryUrl>https://github.com/BlankDev117/Common.Security.Cryptography.git</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>DeepEquals is a fast, flexible, and simple way of comparing objects deeply.</Description>
+		<PackageTags>Security, Cryptography, Encryption, Decryption, Sign, Validate, Crypto, Symmetric, Asymmetric, Keys</PackageTags>
+		<Authors>BlankDev117</Authors>
+		<Title>DeepEquals</Title>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
+	</ItemGroup>
+
+</Project>
