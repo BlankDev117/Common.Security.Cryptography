@@ -22,8 +22,7 @@ jobs:
         dotnet-version: ${{ matrix.dotnet-version }}
     - name: Restore dependencies
       run: >-
-        dotnet nuget add source --api-key  ${{ secrets.NUGET_TOKEN }} --store-password-in-clear-text https://api.nuget.org/v3/index.json
-        && dotnet restore ./src/${{ github.event.repository.name }}.sln
+        dotnet restore ./src/${{ github.event.repository.name }}.sln
     - name: Build
       run: dotnet build --no-restore ./src/${{ github.event.repository.name }}.sln
     - name: Test
