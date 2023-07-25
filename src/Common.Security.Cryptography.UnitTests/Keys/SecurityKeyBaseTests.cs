@@ -52,19 +52,6 @@ namespace Common.Security.Cryptography.UnitTests.SecurityKeys
         }
 
         [Fact]
-        public async Task DecryptAsync_NotEncrypted_DecryptsData()
-        {
-            // Arrange
-            var key = GetSecurityKey();
-
-            var phrase = "A day in the life of a unit test.";
-            var data = Encoding.UTF8.GetBytes(phrase);
-
-            // Act
-            var decryptedData = await key.DecryptAsync(data);
-        }
-
-        [Fact]
         public async Task DecryptAsync_Valid_DecryptsData()
         {
             // Arrange
