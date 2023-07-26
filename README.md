@@ -30,6 +30,9 @@ Additionally, this design should allow the ease of creating and experimenting wi
 
 The main point of entry into the APIs is via the `ICryptographyService`. In this way, the usage of a broad number of different cryptographic algorithms and related hash functions can be consolidated to one place, providing ease of access. Simply providing the necessary model parameters will generate a usable key for cryptographic purposes. All that should be required to construct the desired security key is simply the parameters desired for the function to operate.
 
+# Available on nuget
+https://www.nuget.org/packages/Common.Security.Cryptography#readme-body-tab
+
 # Contributions
 
 Cryptography and data security are important for network and other data management. Feel free to create issues and updates to the library to help it grow and gain access to further security keys.
