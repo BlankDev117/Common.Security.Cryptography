@@ -1,5 +1,5 @@
-﻿using Common.Security.Cryptography.Keys.Aes.Internal.Services;
-using Common.Security.Cryptography.Keys.Rsa.Internal.Services;
+﻿using Common.Security.Cryptography.Keys.Aes;
+using Common.Security.Cryptography.Keys.Rsa;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Common.Security.Cryptography.Keys
@@ -8,8 +8,8 @@ namespace Common.Security.Cryptography.Keys
     {
         public static IServiceCollection AddSecurityKeys(this IServiceCollection services)
         {
-            services.AddSecurityKeyDescriptor<AesKeyGenerator>();
-            services.AddSecurityKeyDescriptor<RsaKeyGenerator>();
+            services.AddAes();
+            services.AddRsa();
 
             return services;
         }

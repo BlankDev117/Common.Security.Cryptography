@@ -1,10 +1,7 @@
 ﻿using Common.Security.Cryptography.Keys;
-using Common.Security.Cryptography.Model;
-using Common.Security.Cryptography.Ports;
 using Common.Security.Cryptography.SecurityKeys.Aes.Models;
 using System;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
