@@ -1,4 +1,5 @@
-﻿using Common.Security.Cryptography.Model;
+﻿using Common.Security.Cryptography.Keys;
+using Common.Security.Cryptography.Model;
 using Common.Security.Cryptography.Ports;
 using Common.Security.Cryptography.SecurityKeys.Aes.Models;
 using System;
@@ -10,28 +11,20 @@ using System.Threading.Tasks;
 
 namespace Common.Security.Cryptography.SecurityKeys.Aes.Internal.Services
 {
-    internal class AesSecurityKey : ISecurityKey
+    internal class AesSecurityKey : SecurityKey<AesKeyInformation>
     {
-        #region Variables
-
-        private AesKeyInformation _securityKeyInformation;
-
-        #endregion
-
         #region Constructors
 
         public AesSecurityKey(AesKeyInformation aesKeyInformation)
+            : base(aesKeyInformation)
         {
-            _securityKeyInformation = aesKeyInformation ?? throw new ArgumentNullException(nameof(aesKeyInformation));
         }
 
         #endregion
 
         #region ISecurityKey
 
-        public SecurityKeyInformation KeyInformation => _securityKeyInformation;
-
-        public async Task<byte[]> EncryptAsync(byte[] data, CancellationToken cancellationToken = default)
+        public override async Task<byte[]> EncryptAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
@@ -39,11 +32,11 @@ namespace Common.Security.Cryptography.SecurityKeys.Aes.Internal.Services
             }
 
             using var aes = new AesManaged();
-            aes.BlockSize = _securityKeyInformation.BlockSize;
-            aes.Padding = _securityKeyInformation.PaddingMode;
-            aes.Key = _securityKeyInformation.Key;
-            aes.IV = _securityKeyInformation.IV;
-            aes.Mode = _securityKeyInformation.CipherMode;
+            aes.BlockSize = SecurityKeyInformation.BlockSize;
+            aes.Padding = SecurityKeyInformation.PaddingMode;
+            aes.Key = SecurityKeyInformation.Key;
+            aes.IV = SecurityKeyInformation.IV;
+            aes.Mode = SecurityKeyInformation.CipherMode;
 
             using var dataStream = new MemoryStream(data);
             var encryptedDataStream = new MemoryStream();
@@ -53,7 +46,7 @@ namespace Common.Security.Cryptography.SecurityKeys.Aes.Internal.Services
             return encryptedDataStream.ToArray();
         }
 
-        public async Task<byte[]> DecryptAsync(byte[] data, CancellationToken cancellationToken = default)
+        public override async Task<byte[]> DecryptAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
@@ -61,11 +54,11 @@ namespace Common.Security.Cryptography.SecurityKeys.Aes.Internal.Services
             }
 
             using var aes = new AesManaged();
-            aes.BlockSize = _securityKeyInformation.BlockSize;
-            aes.Padding = _securityKeyInformation.PaddingMode;
-            aes.Key = _securityKeyInformation.Key;
-            aes.IV = _securityKeyInformation.IV;
-            aes.Mode = _securityKeyInformation.CipherMode;
+            aes.BlockSize = SecurityKeyInformation.BlockSize;
+            aes.Padding = SecurityKeyInformation.PaddingMode;
+            aes.Key = SecurityKeyInformation.Key;
+            aes.IV = SecurityKeyInformation.IV;
+            aes.Mode = SecurityKeyInformation.CipherMode;
 
             using var encryptedDataStream = new MemoryStream(data);
             using var cryptoStream = new CryptoStream(encryptedDataStream, aes.CreateDecryptor(), CryptoStreamMode.Read);
@@ -74,53 +67,15 @@ namespace Common.Security.Cryptography.SecurityKeys.Aes.Internal.Services
             return decryptedStream.ToArray();
         }
 
-        public Task<byte[]> SignAsync(byte[] data, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
+        public override void Dispose()
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
-            var hashAlgorithm = HashAlgorithm.Create(hashAlgorithmName.Name);
-            if (hashAlgorithm == null)
-            {
-                throw new InvalidOperationException($"The hash algorithm {hashAlgorithmName.Name} is not supported.");
-            }
-
-            var dataHash = hashAlgorithm.ComputeHash(data);
-            return EncryptAsync(dataHash, cancellationToken);
-        }
-
-        public async Task<bool> ValidateSignatureAsync(byte[] data, byte[] signedData, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
-        {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-            if (signedData == null)
-            {
-                throw new ArgumentNullException(nameof(signedData));
-            }
-
-            var hashAlgorithm = HashAlgorithm.Create(hashAlgorithmName.Name);
-            if (hashAlgorithm == null)
-            {
-                throw new InvalidOperationException($"The hash algorithm {hashAlgorithmName.Name} is not supported.");
-            }
-
-            var decryptedDataHash = await DecryptAsync(signedData, cancellationToken);
-            return decryptedDataHash.SequenceEqual(hashAlgorithm.ComputeHash(data));
-        }
-
-        public void Dispose()
-        {
-            if (_securityKeyInformation == null)
+            if (SecurityKeyInformation == null)
             {
                 throw new ObjectDisposedException(nameof(AesSecurityKey));
             }
 
-            Array.Clear(_securityKeyInformation.Key, 0, _securityKeyInformation.Key.Length);
-            _securityKeyInformation = null;
+            Array.Clear(SecurityKeyInformation.Key, 0, SecurityKeyInformation.Key.Length);
+            SecurityKeyInformation = null;
         }
 
         #endregion
