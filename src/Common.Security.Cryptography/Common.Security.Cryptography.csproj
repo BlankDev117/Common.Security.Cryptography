@@ -4,9 +4,9 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<RepositoryUrl>https://github.com/BlankDev117/Common.Security.Cryptography.git</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
-		<Description>Easy to use and flexible cryptographic library for .NET. </Description>
+		<Description>Easy to use, flexible, and machine agnostic cryptographic library for .NET. </Description>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>Security, Cryptography, Encryption, Decryption, Sign, Validate, Crypto, Symmetric, Asymmetric, Keys</PackageTags>
+		<PackageTags>Security, Cryptography, Encryption, Decryption, Sign, Validate, Crypto, Symmetric, Asymmetric, Keys, AES, RSA</PackageTags>
 		<Authors>BlankDev117</Authors>
 		<Title>Common.Security.Cryptography</Title>
 	</PropertyGroup>
