@@ -1,7 +1,6 @@
 ﻿using Common.Security.Cryptography.Model;
 using Common.Security.Cryptography.Ports;
 using System;
-using System.Threading;
 
 namespace Common.Security.Cryptography.Keys
 {

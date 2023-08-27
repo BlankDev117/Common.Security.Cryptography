@@ -1,98 +1,67 @@
-﻿using Common.Security.Cryptography.Model;
-using Common.Security.Cryptography.Ports;
-using Common.Security.Cryptography.SecurityKeys.Rsa.Models;
+﻿using Common.Security.Cryptography.Keys.Rsa.Models;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Encodings;
+using Org.BouncyCastle.Crypto.Engines;
+using Org.BouncyCastle.Crypto.Signers;
+using Org.BouncyCastle.Security;
 using System;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Common.Security.Cryptography.SecurityKeys.Rsa.Internal.Services
+namespace Common.Security.Cryptography.Keys.Rsa.Internal.Services
 {
-    internal class RsaSecurityKey : ISecurityKey
+    internal class RsaSecurityKey : SecurityKey<RsaKeyInformation>
     {
-        #region Variables
-
-        private RsaKeyInformation _securityKeyInformation;
-
-        #endregion
-
         #region Constructors
 
         public RsaSecurityKey(RsaKeyInformation rsaKeyInformation)
+            : base(rsaKeyInformation)
         {
-            _securityKeyInformation = rsaKeyInformation ?? throw new ArgumentNullException(nameof(rsaKeyInformation));
         }
 
         #endregion
 
         #region ISecurityKey
 
-        public SecurityKeyInformation KeyInformation => _securityKeyInformation;
-
-        public Task<byte[]> EncryptAsync(byte[] data, CancellationToken cancellationToken = default)
+        public override Task<byte[]> EncryptAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
                 throw new ArgumentNullException(nameof(data));
             }
 
-            using var rsa = new RSACryptoServiceProvider(new CspParameters()
-            {
-                Flags = CspProviderFlags.UseMachineKeyStore
-            })
-            {
-                PersistKeyInCsp = false
-            };
-            rsa.ImportCspBlob(_securityKeyInformation.PublicKey);
-
-            var encryptedBytes = rsa.Encrypt(data, _securityKeyInformation.EncryptionPadding);
-            rsa.Clear();
-            return Task.FromResult(encryptedBytes);
+            var cipher = GetCipher(SecurityKeyInformation.EncryptionPadding);
+            cipher.Init(true, SecurityKeyInformation.PublicKey);
+            return Task.FromResult(cipher.ProcessBlock(data, 0, data.Length));
         }
 
-        public Task<byte[]> DecryptAsync(byte[] data, CancellationToken cancellationToken = default)
+        public override Task<byte[]> DecryptAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
                 throw new ArgumentNullException(nameof(data));
             }
 
-            using var rsa = new RSACryptoServiceProvider(new CspParameters()
-            {
-                Flags = CspProviderFlags.UseMachineKeyStore
-            })
-            {
-                PersistKeyInCsp = false
-            };
-            rsa.ImportCspBlob(_securityKeyInformation.PrivateKey);
-
-            var encryptedBytes = rsa.Decrypt(data, _securityKeyInformation.EncryptionPadding);
-            rsa.Clear();
-            return Task.FromResult(encryptedBytes);
+            var cipher = GetCipher(SecurityKeyInformation.EncryptionPadding);
+            cipher.Init(false, SecurityKeyInformation.PrivateKey);
+            return Task.FromResult(cipher.ProcessBlock(data, 0, data.Length));
         }
 
-        public Task<byte[]> SignAsync(byte[] data, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
+        public override Task<byte[]> SignAsync(byte[] data, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
                 throw new ArgumentNullException(nameof(data));
             }
 
-            using var rsa = new RSACryptoServiceProvider(new CspParameters()
-            {
-                Flags = CspProviderFlags.UseMachineKeyStore
-            })
-            {
-                PersistKeyInCsp = false
-            };
-            rsa.ImportCspBlob(_securityKeyInformation.PrivateKey);
-
-            var signedData = rsa.SignData(data, hashAlgorithmName, _securityKeyInformation.SignaturePadding);
-            rsa.Clear();
-            return Task.FromResult(signedData);
+            var signer = GetSigner(SecurityKeyInformation.SignaturePadding, hashAlgorithmName);
+            signer.Init(true, SecurityKeyInformation.PrivateKey);
+            signer.BlockUpdate(data, 0, data.Length);
+            return Task.FromResult(signer.GenerateSignature());
         }
 
-        public Task<bool> ValidateSignatureAsync(byte[] data, byte[] signedData, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
+        public override Task<bool> ValidateSignatureAsync(byte[] data, byte[] signedData, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
@@ -103,31 +72,39 @@ namespace Common.Security.Cryptography.SecurityKeys.Rsa.Internal.Services
                 throw new ArgumentNullException(nameof(signedData));
             }
 
-            using var rsa = new RSACryptoServiceProvider(new CspParameters()
-            {
-                Flags = CspProviderFlags.UseMachineKeyStore
-            })
-            {
-                PersistKeyInCsp = false
-            };
-            rsa.ImportCspBlob(_securityKeyInformation.PublicKey);
-
-            var isValid = rsa.VerifyData(data, signedData, hashAlgorithmName, _securityKeyInformation.SignaturePadding);
-            rsa.Clear();
-            return Task.FromResult(isValid);
+            var signer = GetSigner(SecurityKeyInformation.SignaturePadding, hashAlgorithmName);
+            signer.Init(false, SecurityKeyInformation.PublicKey);
+            signer.BlockUpdate(data, 0, data.Length);
+            return Task.FromResult(signer.VerifySignature(signedData));
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
-            if (_securityKeyInformation == null)
+            if (SecurityKeyInformation == null)
             {
                 throw new ObjectDisposedException(nameof(RsaSecurityKey));
             }
 
-            Array.Clear(_securityKeyInformation.PublicKey, 0, _securityKeyInformation.PublicKey.Length);
-            Array.Clear(_securityKeyInformation.PrivateKey, 0, _securityKeyInformation.PrivateKey.Length);
-            _securityKeyInformation = null;
+            SecurityKeyInformation = null;
         }
+
+        #endregion
+
+        #region Helpers
+
+        private ISigner GetSigner(RSASignaturePadding signaturePadding, HashAlgorithmName hashAlgorithmName) => signaturePadding.Mode switch
+        {
+            RSASignaturePaddingMode.Pss => new PssSigner(new RsaBlindedEngine(), DigestUtilities.GetDigest(hashAlgorithmName.Name)),
+            RSASignaturePaddingMode.Pkcs1 => new RsaDigestSigner(DigestUtilities.GetDigest(hashAlgorithmName.Name)),
+            _ => throw new NotSupportedException($"Signature Padding mode {signaturePadding} is not currently supported for RSA security key.")
+        };
+
+        private IAsymmetricBlockCipher GetCipher(RSAEncryptionPadding padding) => padding.Mode switch
+        {
+            RSAEncryptionPaddingMode.Pkcs1 => new Pkcs1Encoding(new RsaEngine()),
+            RSAEncryptionPaddingMode.Oaep => new OaepEncoding(new RsaEngine(), DigestUtilities.GetDigest(padding.OaepHashAlgorithm.Name)),
+            _ => throw new NotSupportedException($"Encryption Padding mode {padding} is not currently supported for RSA security key.")
+        };
 
         #endregion
     }

@@ -1,13 +1,10 @@
 ﻿using Common.Security.Cryptography.Exceptions;
-using Common.Security.Cryptography.Keys.Aes.Internal.Services;
 using Common.Security.Cryptography.Keys.Aes.Models;
 using Common.Security.Cryptography.Keys.Rsa.Internal.Services;
 using Common.Security.Cryptography.Keys.Rsa.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Common.Security.Cryptography.UnitTests.Keys.Rsa.Internal
@@ -54,10 +51,15 @@ namespace Common.Security.Cryptography.UnitTests.Keys.Rsa.Internal
         public void Generate_GenerationParameters_GeneratesNewKey()
         {
             // Arrange/Act
-            using var key = _generator.GenerateKey(1024, new RsaKeyGenerationParameters());
+            var keys = new List<long>();
+            for (var i = 0; i < 1; i++)
+            {
+                using var key = _generator.GenerateKey(128, new RsaKeyGenerationParameters());
+                keys.Add(BitConverter.ToInt64(key.KeyInformation.RawKey));
+            }
 
             // Assert
-            Assert.NotNull(key);
+            Assert.Equal(keys.Count, keys.Distinct().Count());
         }
 
         #endregion

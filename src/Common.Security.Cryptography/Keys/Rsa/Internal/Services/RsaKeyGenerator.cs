@@ -1,9 +1,9 @@
-﻿using Common.Security.Cryptography.Keys.Aes.Internal.Services;
-using Common.Security.Cryptography.Keys.Aes.Models;
-using Common.Security.Cryptography.Keys.Rsa.Models;
+﻿using Common.Security.Cryptography.Keys.Rsa.Models;
 using Common.Security.Cryptography.Ports;
-using Common.Security.Cryptography.SecurityKeys.Rsa.Internal.Services;
-using Common.Security.Cryptography.SecurityKeys.Rsa.Models;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Generators;
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Security;
 using System;
 using System.Security.Cryptography;
 
@@ -11,41 +11,53 @@ namespace Common.Security.Cryptography.Keys.Rsa.Internal.Services
 {
     internal class RsaKeyGenerator : SecurityKeyGenerator<RsaKeyGenerationParameters, RsaKeyInformation, RsaKeyExchangeInformation>
     {
+        #region Static
+
+        internal static ISecurityKey GenerateKey(int keySize)
+        {
+            return new RsaKeyGenerator().GenerateKey(keySize, new RsaKeyGenerationParameters());
+        }
+
+        #endregion
+
+        #region Variables
+
+        private const long DefaultPublicExponent = 65537;
+        private const int NumberOfTestsForPrime = 500;
+        private static readonly KeySizes ValidKeySizes = new KeySizes(128, 512, 64);
+
+        #endregion
+
+        #region SecurityKeyGenerator Overrides
+
         protected override ISecurityKey GenerateKey(int keySize, RsaKeyGenerationParameters keyGenerationParameters)
         {
-            using var rsa = new RSACryptoServiceProvider(new CspParameters()
-            {
-                Flags = CspProviderFlags.UseMachineKeyStore
-            })
-            {
-                PersistKeyInCsp = false
-            };
+            SecurityKeyHelper.ValidateKeySize(keySize, ValidKeySizes);
 
-            try
-            {
-                SecurityKeyHelper.ValidateKeySize(keySize, rsa.LegalKeySizes);
-            }
-            catch (Exception)
-            {
-                rsa.Clear();
-                throw;
-            }
+            var rsaKeyGenerator = new RsaKeyPairGenerator();
+            rsaKeyGenerator.Init(new Org.BouncyCastle.Crypto.Parameters.RsaKeyGenerationParameters(BigInteger.ValueOf(DefaultPublicExponent),
+                new SecureRandom(),
+                keySize * 8, // BouncyCastle uses bit length
+                NumberOfTestsForPrime));
 
-            var key = new RsaSecurityKey(new RsaKeyInformation(rsa.ExportCspBlob(false), rsa.ExportCspBlob(true),
-                keyGenerationParameters.EncryptionPadding, keyGenerationParameters.SignaturePadding));
-
-            rsa.Clear();
-            return key;
+            var key = rsaKeyGenerator.GenerateKeyPair();
+            return new RsaSecurityKey(new RsaKeyInformation(key.Public, key.Private, keyGenerationParameters.EncryptionPadding, keyGenerationParameters.SignaturePadding));
         }
 
         protected override ISecurityKey GenerateKey(byte[] privateKey, RsaKeyExchangeInformation keyExchangeInformation)
         {
+            if (privateKey == null)
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
             if (keyExchangeInformation.PublicKey == null)
             {
                 throw new ArgumentNullException(nameof(keyExchangeInformation.PublicKey));
             }
 
-            return new RsaSecurityKey(new RsaKeyInformation(keyExchangeInformation.PublicKey, privateKey,
+            var rsaPublicKey = PublicKeyFactory.CreateKey(keyExchangeInformation.PublicKey);
+            var rsaPrivateKey = PrivateKeyFactory.CreateKey(privateKey);
+            return new RsaSecurityKey(new RsaKeyInformation(rsaPublicKey, rsaPrivateKey,
                 keyExchangeInformation.EncryptionPadding, keyExchangeInformation.SignaturePadding));
         }
 
@@ -54,9 +66,6 @@ namespace Common.Security.Cryptography.Keys.Rsa.Internal.Services
             return new RsaSecurityKey(keyInformation);
         }
 
-        internal static ISecurityKey GenerateKey(int keySize)
-        {
-            return new RsaKeyGenerator().GenerateKey(keySize, new RsaKeyGenerationParameters());
-        }
+        #endregion
     }
 }
