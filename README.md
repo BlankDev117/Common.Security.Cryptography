@@ -36,3 +36,13 @@ https://www.nuget.org/packages/Common.Security.Cryptography#readme-body-tab
 # Contributions
 
 Cryptography and data security are important for network and other data management. Feel free to create issues and updates to the library to help it grow and gain access to further security keys.
+
+When creating a branch, please create the branch name using the following format:
+`csc-[issue number]-[name]`
+
+There is a workflow that will automatically attach issues to a PR given the format above.
+`CSC` is an abbreviation for the library
+`Issue number` is the issue that is being addressed by the PR
+`Name` is the logical branch name for the work being submitted. While not required, words may be split using `-`. i.e. `csc-5-a-new-branch-fixing-a-terrible-bug` 
+
+When submitting a PR, please include the issue number in the commit title so that it is readable at a glance, i.e. `Fixing a bug (CSC-5)`
