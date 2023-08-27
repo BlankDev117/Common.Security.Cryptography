@@ -17,6 +17,7 @@
 
 	<ItemGroup>
 		<None Include="..\..\README.md" Pack="true" PackagePath="\" />
+		<PackageReference Include="BouncyCastle.Cryptography" Version="2.2.1" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
 	</ItemGroup>
 

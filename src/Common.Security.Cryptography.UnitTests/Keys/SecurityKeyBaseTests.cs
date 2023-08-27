@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Common.Security.Cryptography.UnitTests.SecurityKeys
+namespace Common.Security.Cryptography.UnitTests.Keys
 {
     public abstract class SecurityKeyBaseTests
     {
@@ -121,17 +121,21 @@ namespace Common.Security.Cryptography.UnitTests.SecurityKeys
             await Assert.ThrowsAsync<ArgumentNullException>(() => key.ValidateSignatureAsync(new byte[0], null, HashAlgorithmName.SHA256));
         }
 
-        [Fact]
-        public async Task ValidateSignatureAsync_InvalidSignature_ReturnsFalse()
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task ValidateSignatureAsync_InvalidSignature_ReturnsFalse(bool wrongHash)
         {
             // Arrange
             var key = GetSecurityKey();
 
             var data = Encoding.UTF8.GetBytes("A day in the life of a unit test.");
-            var signedData = await key.SignAsync(data, HashAlgorithmName.SHA512);
+            var signedData = await key.SignAsync(data, HashAlgorithmName.SHA256);
 
             // Act
-            var validationResult = await key.ValidateSignatureAsync(data, signedData, HashAlgorithmName.SHA256);
+            var validationResult = await key.ValidateSignatureAsync(data,
+                wrongHash ? signedData : new byte[0],
+                wrongHash ? HashAlgorithmName.SHA512 : HashAlgorithmName.SHA256);
 
             // Assert
             Assert.False(validationResult);

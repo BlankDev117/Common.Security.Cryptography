@@ -1,12 +1,11 @@
-﻿using Common.Security.Cryptography.Keys;
-using Common.Security.Cryptography.SecurityKeys.Aes.Models;
+﻿using Common.Security.Cryptography.Keys.Aes.Models;
 using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Common.Security.Cryptography.SecurityKeys.Aes.Internal.Services
+namespace Common.Security.Cryptography.Keys.Aes.Internal.Services
 {
     internal class AesSecurityKey : SecurityKey<AesKeyInformation>
     {

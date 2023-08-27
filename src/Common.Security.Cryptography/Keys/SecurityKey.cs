@@ -36,7 +36,7 @@ namespace Common.Security.Cryptography.Keys
 
         public abstract void Dispose();
 
-        public Task<byte[]> SignAsync(byte[] data, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
+        public virtual Task<byte[]> SignAsync(byte[] data, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
@@ -53,7 +53,7 @@ namespace Common.Security.Cryptography.Keys
             return EncryptAsync(dataHash, cancellationToken);
         }
 
-        public async Task<bool> ValidateSignatureAsync(byte[] data, byte[] signedData, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> ValidateSignatureAsync(byte[] data, byte[] signedData, HashAlgorithmName hashAlgorithmName, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {

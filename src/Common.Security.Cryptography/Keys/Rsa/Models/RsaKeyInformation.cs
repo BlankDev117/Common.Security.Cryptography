@@ -1,17 +1,17 @@
-﻿using Common.Security.Cryptography.Keys.Rsa.Models;
-using Common.Security.Cryptography.Model;
+﻿using Common.Security.Cryptography.Model;
+using Org.BouncyCastle.Crypto;
 using System;
 using System.Security.Cryptography;
 
-namespace Common.Security.Cryptography.SecurityKeys.Rsa.Models
+namespace Common.Security.Cryptography.Keys.Rsa.Models
 {
-    public class RsaKeyInformation: SecurityKeyInformation
+    public class RsaKeyInformation : SecurityKeyInformation
     {
         #region Variables
 
-        public byte[] PublicKey { get; }
+        public AsymmetricKeyParameter PublicKey { get; }
 
-        public byte[] PrivateKey { get; }
+        public AsymmetricKeyParameter PrivateKey { get; }
 
         public RSAEncryptionPadding EncryptionPadding { get; }
 
@@ -21,7 +21,7 @@ namespace Common.Security.Cryptography.SecurityKeys.Rsa.Models
 
         #region Constructors
 
-        public RsaKeyInformation(byte[] publicKey, byte[] privateKey, RSAEncryptionPadding encryptionPadding,
+        public RsaKeyInformation(AsymmetricKeyParameter publicKey, AsymmetricKeyParameter privateKey, RSAEncryptionPadding encryptionPadding,
             RSASignaturePadding signaturePadding)
             : base(SecurityKeyUsageType.Personal)
         {
@@ -35,7 +35,7 @@ namespace Common.Security.Cryptography.SecurityKeys.Rsa.Models
 
         #region SecurityKeyInformation Overrides
 
-        public override byte[] RawKey => PrivateKey;
+        public override byte[] RawKey => PrivateKey.ToArray();
 
         public override SecurityKeyExchangeInformation GetKeyExhangeInformation()
         {
@@ -43,7 +43,7 @@ namespace Common.Security.Cryptography.SecurityKeys.Rsa.Models
             {
                 EncryptionPadding = EncryptionPadding,
                 SignaturePadding = SignaturePadding,
-                PublicKey = PublicKey
+                PublicKey = PublicKey.ToArray()
             };
         }
 

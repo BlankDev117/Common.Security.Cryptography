@@ -14,15 +14,15 @@ namespace Common.Security.Cryptography.UnitTests
         #region End to End
 
         [Fact]
-        public async Task EndToEnd_Testing()
+        public async Task EndToEnd_SecurityKeyExchange_Testing()
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddCryptography();
             var serviceProvider = serviceCollection.BuildServiceProvider();
 
             var cryptographyService = serviceProvider.GetRequiredService<ICryptographyService>();
-            var personalKey = cryptographyService.CreateKey(1024, new RsaKeyGenerationParameters());
-            var otherKey = cryptographyService.CreateKey(1024, new RsaKeyGenerationParameters());
+            var personalKey = cryptographyService.CreateKey(512, new RsaKeyGenerationParameters());
+            var otherKey = cryptographyService.CreateKey(512, new RsaKeyGenerationParameters());
 
             var personalExchangeKeyInformation = personalKey.KeyInformation.GetKeyExhangeInformation() as RsaKeyExchangeInformation;
             var otherExchangeKeyInformation =  otherKey.KeyInformation.GetKeyExhangeInformation() as RsaKeyExchangeInformation;

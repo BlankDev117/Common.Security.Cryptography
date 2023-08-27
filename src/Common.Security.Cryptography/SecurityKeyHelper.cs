@@ -8,7 +8,7 @@ namespace Common.Security.Cryptography
 {
     public static class SecurityKeyHelper
     {
-        public static void ValidateKeySize(int keySize, KeySizes[] keySizes)
+        public static void ValidateKeySize(int keySize, params KeySizes[] keySizes)
         {
             if (keySizes.All(keySizeLimit => keySize < keySizeLimit.MinSize || keySize > keySizeLimit.MaxSize ||
                   keySize % keySizeLimit.SkipSize != 0))

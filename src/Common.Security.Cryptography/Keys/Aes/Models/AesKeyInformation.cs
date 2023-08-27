@@ -1,9 +1,8 @@
-﻿using Common.Security.Cryptography.Keys.Aes.Models;
-using Common.Security.Cryptography.Model;
+﻿using Common.Security.Cryptography.Model;
 using System;
 using System.Security.Cryptography;
 
-namespace Common.Security.Cryptography.SecurityKeys.Aes.Models
+namespace Common.Security.Cryptography.Keys.Aes.Models
 {
     public class AesKeyInformation : SecurityKeyInformation
     {
@@ -23,7 +22,7 @@ namespace Common.Security.Cryptography.SecurityKeys.Aes.Models
 
         #region Constructors
 
-        public AesKeyInformation(byte[] key, byte[] iv, int blockSize, PaddingMode paddingMode, 
+        public AesKeyInformation(byte[] key, byte[] iv, int blockSize, PaddingMode paddingMode,
             CipherMode cipherMode)
             : base(SecurityKeyUsageType.Personal)
         {

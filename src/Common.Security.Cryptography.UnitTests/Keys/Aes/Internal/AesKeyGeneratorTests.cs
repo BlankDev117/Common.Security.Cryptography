@@ -1,7 +1,10 @@
 ﻿using Common.Security.Cryptography.Exceptions;
 using Common.Security.Cryptography.Keys.Aes.Internal.Services;
 using Common.Security.Cryptography.Keys.Aes.Models;
+using Common.Security.Cryptography.Ports;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Common.Security.Cryptography.UnitTests.Keys.Aes.Internal
@@ -48,10 +51,15 @@ namespace Common.Security.Cryptography.UnitTests.Keys.Aes.Internal
         public void Generate_GenerationParameters_GeneratesNewKey()
         {
             // Arrange/Act
-            using var key = _generator.GenerateKey(128, new  AesKeyGenerationParameters());
-
+            var keys = new List<long>();
+            for (var i = 0; i < 100; i++)
+            {
+                using var key = _generator.GenerateKey(128, new AesKeyGenerationParameters());
+                keys.Add(BitConverter.ToInt64(key.KeyInformation.RawKey));
+            }
+                 
             // Assert
-            Assert.NotNull(key);
+            Assert.Equal(keys.Count, keys.Distinct().Count());
         }
 
         #endregion
